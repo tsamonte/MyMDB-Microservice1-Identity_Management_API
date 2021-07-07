@@ -16,7 +16,7 @@ public class UserRecords {
      * @param email The email to be tested
      * @return true if email is found in User table; false if not
      */
-    public static boolean userAlreadyExists(String email) {
+    public static boolean userExists(String email) {
         try {
             String query = "SELECT *" +
                     " FROM user" +

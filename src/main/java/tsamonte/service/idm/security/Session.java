@@ -16,6 +16,7 @@ Session {
     private final Timestamp timeCreated;
     private final Timestamp exprTime;
     private Timestamp lastUsed;
+    private int status;
 
     /*
         This constructor is used to generate a new session. The only required information is the user's email address.
@@ -27,6 +28,7 @@ Session {
         this.timeCreated = new Timestamp(System.currentTimeMillis());
         this.lastUsed = timeCreated;
         this.exprTime = new Timestamp(System.currentTimeMillis() + TOKEN_EXPR);
+        this.status = ACTIVE;
     }
 
     /*
@@ -34,12 +36,13 @@ Session {
         sessionID (token) will come from the client in a request, the lastUsed time will be known at the time the
         request happens (current time), timeCreated and exprTime come from the sessions table in the database.
      */
-    private Session(String email, Token sessionID, Timestamp timeCreated, Timestamp lastUsed, Timestamp exprTime) {
+    private Session(String email, Token sessionID, Timestamp timeCreated, Timestamp lastUsed, Timestamp exprTime, int status) {
         this.email = email;
         this.sessionID = sessionID;
         this.timeCreated = timeCreated;
         this.lastUsed = timeCreated;
         this.exprTime = exprTime;
+        this.status = status;
     }
 
     /*
@@ -52,8 +55,8 @@ Session {
     /*
         Rebuild an existing session object using the username and sessionID.
      */
-    public static Session rebuildSession(String userName, Token sessionID, Timestamp timeCreated, Timestamp lastUsed, Timestamp exprTime) {
-        return new Session(userName, sessionID, timeCreated, lastUsed, exprTime);
+    public static Session rebuildSession(String userName, Token sessionID, Timestamp timeCreated, Timestamp lastUsed, Timestamp exprTime, int status) {
+        return new Session(userName, sessionID, timeCreated, lastUsed, exprTime, status);
     }
 
     /*
@@ -126,5 +129,9 @@ Session {
     public Timestamp getExprTime() {
         return exprTime;
     }
+
+    public int getStatus() { return status; }
+
+    public void setStatus(int newStatus) { this.status = newStatus; }
 }
 

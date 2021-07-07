@@ -108,7 +108,7 @@ public class RegisterEndpoint {
         }
 
         // resultCode = 16; 200 OK; "Email already in use."
-        if(UserRecords.userAlreadyExists(requestModel.getEmail())) {
+        if(UserRecords.userExists(requestModel.getEmail())) {
             responseModel = new BaseResponseModel(Result.EMAIL_ALREADY_EXISTS);
             ServiceLogger.LOGGER.warning(responseModel.getMessage());
             return responseModel.buildResponse();

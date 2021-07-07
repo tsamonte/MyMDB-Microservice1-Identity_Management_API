@@ -3,6 +3,7 @@ package tsamonte.service.idm.database.access;
 import tsamonte.service.idm.IDMService;
 import tsamonte.service.idm.logger.ServiceLogger;
 import tsamonte.service.idm.security.Session;
+import tsamonte.service.idm.security.Token;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,7 +17,7 @@ public class SessionRecords {
      * @param email user used to query session
      * @return true if session already exists; false otherwise
      */
-    public static boolean sessionExistsForUser(String email) {
+    private static boolean sessionExistsForUser(String email) {
         try {
             String query = "SELECT *" +
                     " FROM session" +
@@ -53,7 +54,7 @@ public class SessionRecords {
             PreparedStatement ps = IDMService.getCon().prepareStatement(insert);
             ps.setString(1, session.getSessionID().toString());
             ps.setString(2, session.getEmail());
-            ps.setInt(3, Session.ACTIVE);
+            ps.setInt(3, session.getStatus());
             ps.setTimestamp(4, session.getTimeCreated());
             ps.setTimestamp(5, session.getLastUsed());
             ps.setTimestamp(6, session.getExprTime());
@@ -67,6 +68,64 @@ public class SessionRecords {
         catch (SQLException e) {
             ServiceLogger.LOGGER.warning("Insert failed: Unable to insert new user record.");
             e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public static Session retrieve(String email) {
+        try {
+            Session result = null;
+
+            String query = "SELECT *" +
+                    " FROM session" +
+                    " WHERE email = ?";
+            PreparedStatement ps = IDMService.getCon().prepareStatement(query);
+            ps.setString(1, email);
+
+            ResultSet rs = ps.executeQuery();
+
+            // Since only one value is expected, only need to call rs.next() once
+            while(rs.next()) {
+                result = Session.rebuildSession(rs.getString("email"),
+                        Token.rebuildToken(rs.getString("session_id")),
+                        rs.getTimestamp("time_created"),
+                        rs.getTimestamp("last_used"),
+                        rs.getTimestamp("expr_time"),
+                        rs.getInt("status")
+                );
+            }
+            return result;
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static int update(Session session) {
+        try {
+            // When updating a particular session, the email, session_id, and time_created will never change
+            String update = "UPDATE session" +
+                    " SET status = ?, last_used = ?, expr_time = ?" +
+                    " WHERE email = ? AND session_id = ?";
+            PreparedStatement ps = IDMService.getCon().prepareStatement(update);
+
+            ps.setInt(1, session.getStatus());
+            ps.setTimestamp(2, session.getLastUsed());
+            ps.setTimestamp(3, session.getExprTime());
+            ps.setString(4, session.getEmail());
+            ps.setString(5, session.getSessionID().toString());
+
+            ServiceLogger.LOGGER.info("Trying update: " + ps.toString());
+            int affectedRows = ps.executeUpdate();
+            ServiceLogger.LOGGER.info("Update succeeded.");
+
+            return affectedRows;
+        }
+        catch (SQLException e) {
+            ServiceLogger.LOGGER.warning("Update failed: Unable to update session table.");
+            e.printStackTrace();
+
             return -1;
         }
     }
