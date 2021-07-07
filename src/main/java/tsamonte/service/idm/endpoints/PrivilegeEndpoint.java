@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 /**
- * POST /api/idm/register
+ * POST /api/idm/privilege
  *
  * Request Model:
  *      - email (string, required)

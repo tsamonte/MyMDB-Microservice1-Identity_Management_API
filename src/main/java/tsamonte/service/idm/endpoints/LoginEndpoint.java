@@ -115,7 +115,6 @@ public class LoginEndpoint {
 
         // resultCode = 120; 200 OK; "User logged in successfully."
         Session session = Session.createSession(requestModel.getEmail());
-        String session_id = session.getSessionID().toString();
 
         SessionRecords.insert(session);
 
