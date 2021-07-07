@@ -22,7 +22,7 @@ import java.sql.SQLException;
 
 public class IDMService {
 
-    public static final String RESOURCE_PATH = "tsamonte.service.idm.resources";
+    public static final String RESOURCE_PATH = "tsamonte.service.idm.endpoints";
 
     public static IDMService service;
     private static ServiceConfigs serviceConfigs;

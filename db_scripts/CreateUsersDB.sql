@@ -9,7 +9,7 @@ CREATE TABLE privilege_level (
 );
 
 CREATE TABLE session_status (
-	status_id INTEGER NOT NULL,
+	statuserus_id INTEGER NOT NULL,
 	status VARCHAR(20) NOT NULL,
     PRIMARY KEY (status_id)
 );

@@ -54,12 +54,12 @@ public class RegisterEndpoint {
                 responseModel = new BaseResponseModel(Result.JSON_PARSE_EXCEPTION);
             }
 
-            // resultCode = -2; 400 Bad request; "JSON Mapping Exception"
+            // resultCode = -2; 400 Bad request; "JSON Mapping Exception."
             else if (e instanceof JsonMappingException) {
                 responseModel = new BaseResponseModel(Result.JSON_MAPPING_EXCEPTION);
             }
 
-            // resultCode = -1; 500 Internal Server Error; "Internal server error"
+            // resultCode = -1; 500 Internal Server Error; "Internal server error."
             else {
                 responseModel = new BaseResponseModel(Result.INTERNAL_SERVER_ERROR);
             }

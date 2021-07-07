@@ -20,7 +20,7 @@ public class PrivilegeRequestModel {
 
     @JsonCreator
     public PrivilegeRequestModel(@JsonProperty(value = "email", required = true) String email,
-                               @JsonProperty(value = "session_id", required = true) int plevel) {
+                               @JsonProperty(value = "plevel", required = true) int plevel) {
         this.email = email;
         this.plevel = plevel;
     }
