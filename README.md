@@ -37,7 +37,7 @@ Ensure these files are run in the order above.
 
 ### Java Configuration File
 Before running the project, create a configuration file called "config.yaml" in the root of the Java project. The structure of "config.yaml" should be as follows:
-```
+```yaml
 databaseConfig:
   dbUsername: 
   dbPassword: 
