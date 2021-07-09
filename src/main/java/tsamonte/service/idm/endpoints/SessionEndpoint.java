@@ -71,7 +71,7 @@ public class SessionEndpoint {
         // resultCode = -13; 400 Bad request; "Token has invalid length."
         if(requestModel.getSessionID() == null || requestModel.getSessionID().length() != 128) {
             responseModel = new LoginSessionResponseModel(Result.TOKEN_INVALID_LENGTH, null);
-            ServiceLogger.LOGGER.warning(responseModel.getMessage());
+            ServiceLogger.LOGGER.warning(responseModel.getMessage() + ": " + requestModel.getSessionID());
             return responseModel.buildResponse();
         }
 
@@ -85,7 +85,7 @@ public class SessionEndpoint {
         // resultCode = -11; 400 Bad request; "Email address has invalid format."
         if(!EmailPasswordHelper.isValidEmailFormat(requestModel.getEmail())) {
             responseModel = new LoginSessionResponseModel(Result.EMAIL_INVALID_FORMAT, null);
-            ServiceLogger.LOGGER.warning(responseModel.getMessage());
+            ServiceLogger.LOGGER.warning(responseModel.getMessage() + ": " + requestModel.getEmail());
             return responseModel.buildResponse();
         }
 
@@ -96,49 +96,62 @@ public class SessionEndpoint {
             return responseModel.buildResponse();
         }
 
-        Session retrievedSession = SessionRecords.retrieve(requestModel.getEmail());
+        Session retrievedSession = SessionRecords.retrieve(requestModel.getEmail(), requestModel.getSessionID());
 
-        // Note: if the status for retrievedSession is "active", we should check if it's expired before proceeding
-        if(retrievedSession.getStatus() == Session.ACTIVE) {
-            // resultCode = 130; 200 OK; "Session is active."
-            if (retrievedSession.isDataValid()) {
-                responseModel = new LoginSessionResponseModel(Result.SESSION_ACTIVE, retrievedSession.getSessionID().toString());
-
-                // when the session is still active, we update the last_used timestamp in the db
-                retrievedSession.update();
-            }
-            // resultCode = 131; 200 OK; "Session is expired."
-            else {
-                responseModel = new LoginSessionResponseModel(Result.SESSION_EXPIRED, retrievedSession.getSessionID().toString());
-
-                // when the session is expired, we update that status in the db
-                retrievedSession.setStatus(Session.EXPIRED);
-            }
-
-            SessionRecords.update(retrievedSession);
-        }
-
-        // Note, session could still be retrieved as expired, so have a separate check for that too
-        // resultCode = 131; 200 OK; "Session is expired."
-        else if (retrievedSession.getStatus() == Session.EXPIRED) {
-            responseModel = new LoginSessionResponseModel(Result.SESSION_EXPIRED, retrievedSession.getSessionID().toString());
-        }
-
-        // resultCode = 132; 200 OK; "Session is closed."
-        else if (retrievedSession.getStatus() == Session.CLOSED) {
-            responseModel = new LoginSessionResponseModel(Result.SESSION_CLOSED, retrievedSession.getSessionID().toString());
-        }
-
-        // resultCode = 133; 200 OK; "Session is revoked."
-        else if (retrievedSession.getStatus() == Session.REVOKED) {
-            responseModel = new LoginSessionResponseModel(Result.SESSION_REVOKED, retrievedSession.getSessionID().toString());
-        }
         // resultCode = 134; 200 OK; "Session not found."
-        else {
-            responseModel = new LoginSessionResponseModel(Result.SESSION_NOT_FOUND, retrievedSession.getSessionID().toString());
+        if(retrievedSession == null) {
+            responseModel = new LoginSessionResponseModel(Result.SESSION_NOT_FOUND, null);
+            ServiceLogger.LOGGER.warning(responseModel.getMessage());
+            return responseModel.buildResponse();
         }
 
-        ServiceLogger.LOGGER.warning(responseModel.getMessage());
+        switch(retrievedSession.getStatus()) {
+            // Note: if the status for retrievedSession is "active", we should check if it's expired before proceeding
+            case Session.ACTIVE: {
+                // resultCode = 130; 200 OK; "Session is active."
+                if (retrievedSession.isDataValid()) {
+                    responseModel = new LoginSessionResponseModel(Result.SESSION_ACTIVE, retrievedSession.getSessionID().toString());
+
+                    // when the session is still active, we update the last_used timestamp in the db
+                    retrievedSession.update();
+                }
+                // resultCode = 131; 200 OK; "Session is expired."
+                else {
+                    responseModel = new LoginSessionResponseModel(Result.SESSION_EXPIRED, null);
+
+                    // when the session is expired, we update that status in the db
+                    retrievedSession.setStatus(Session.EXPIRED);
+                }
+
+                SessionRecords.update(retrievedSession);
+                break;
+            }
+
+            // Note, session could still be retrieved as expired, so have a separate check for that too
+            // resultCode = 131; 200 OK; "Session is expired."
+            case Session.EXPIRED: {
+                responseModel = new LoginSessionResponseModel(Result.SESSION_EXPIRED, null);
+                break;
+            }
+
+            // resultCode = 132; 200 OK; "Session is closed."
+            case Session.CLOSED: {
+                responseModel = new LoginSessionResponseModel(Result.SESSION_CLOSED, null);
+                break;
+            }
+
+            // resultCode = 133; 200 OK; "Session is revoked."
+            case Session.REVOKED: {
+                responseModel = new LoginSessionResponseModel(Result.SESSION_REVOKED, null);
+                break;
+            }
+            // resultCode = 134; 200 OK; "Session not found."
+            default: {
+                responseModel = new LoginSessionResponseModel(Result.SESSION_NOT_FOUND, null);
+            }
+        }
+
+        ServiceLogger.LOGGER.info(responseModel.getMessage());
         return responseModel.buildResponse();
     }
 }

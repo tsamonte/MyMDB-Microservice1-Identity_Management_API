@@ -72,15 +72,16 @@ public class SessionRecords {
         }
     }
 
-    public static Session retrieve(String email) {
+    public static Session retrieve(String email, String sessionID) {
         try {
             Session result = null;
 
             String query = "SELECT *" +
                     " FROM session" +
-                    " WHERE email = ?";
+                    " WHERE email = ? AND session_id = ?";
             PreparedStatement ps = IDMService.getCon().prepareStatement(query);
             ps.setString(1, email);
+            ps.setString(2, sessionID);
 
             ResultSet rs = ps.executeQuery();
 
